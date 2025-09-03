@@ -46,11 +46,11 @@ riscv64-unknown-elf-gcc \
     -g3 \
     -gdwarf-4 \
     -c \
-    math_asm.s \
-    -o math_asm.o
+    tea_encrypt.s \
+    -o tea_encrypt.o
 
 if [ $? -ne 0 ]; then
-    echo "Math assembly compilation failed"
+    echo "TEA encryption assembly compilation failed"
     exit 1
 fi
 
@@ -64,13 +64,13 @@ riscv64-unknown-elf-gcc \
     -gdwarf-4 \
     startup.o \
     example.o \
-    math_asm.o \
+    tea_encrypt.o \
     -T linker.ld \
     -o example.elf
 
 if [ $? -eq 0 ]; then
     echo "Build successful: example.elf created"
-    echo "Object files: example.o, math_asm.o"
+    echo "Object files: example.o, tea_encrypt.o"
 else
     echo "Linking failed"
     exit 1
