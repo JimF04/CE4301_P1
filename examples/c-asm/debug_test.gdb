@@ -1,15 +1,27 @@
+# Conectar a QEMU (RISC-V)
 target remote :1234
-break _start
-break main
-break sum_to_n
-layout asm
-layout regs
+
+# Colocar breakpoints
+break _start              
+break main                
+break PKCS7                          
+
+# Layouts para debugging visual
+layout asm                
+layout regs              
+
+# Iniciar ejecución
+continue                  
+
+# Paso a paso dentro de main
 continue
-step
-step
-info registers
+
+# Llamada a PKCS7
+continue                 
+
+# Continuar hasta el final
 continue
-step
-info registers
+
+# Salir 
 monitor quit
 quit

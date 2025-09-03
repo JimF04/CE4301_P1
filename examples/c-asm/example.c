@@ -1,5 +1,7 @@
-// Simple C program that calls assembly function
-// This demonstrates C+assembly integration in RISC-V
+#include <stddef.h> 
+#include <stdint.h>  
+
+#define BLOCK_SIZE 8
 
 // Assembly function declaration
 extern int sum_to_n(int n);
@@ -43,29 +45,62 @@ void print_string(const char* str) {
     }
 }
 
+void print_hex(const char* buffer, size_t len) {
+    const char hex_chars[] = "0123456789ABCDEF";
+    for (size_t i = 0; i < len; i++) {
+        print_char(hex_chars[(buffer[i] >> 4) & 0xF]);
+        print_char(hex_chars[buffer[i] & 0xF]);
+        print_char(' ');
+    }
+    print_char('\n');
+}
+
+void print_ascii(const char* buffer, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        char c = buffer[i];
+        if (c >= 32 && c <= 126) { // caracteres imprimibles
+            print_char(c);
+        } else {
+            print_char('.'); // reemplazar no imprimibles por '.'
+        }
+    }
+    print_char('\n');
+}
+
+// Padding PKC#7
+size_t PKCS7(const char* input, size_t inputLen, char* output) {
+    // Calcular tamaño de padding
+    size_t rest = inputLen % BLOCK_SIZE; // Resto de la división
+    size_t paddingSize = (rest == 0) ? BLOCK_SIZE : BLOCK_SIZE - rest; 
+
+    // copiar datos originales
+    for (size_t i = 0; i < inputLen; i++){
+        output[i] = input[i]; 
+    }
+
+    // Agregar padding
+    for (size_t i = 0; i < paddingSize; i++) {
+        output[inputLen + i] = (char)paddingSize;
+    }
+
+    return inputLen + paddingSize;
+} 
+
 // Entry point for C program
 void main() {
-    // Test the assembly function with different values
-    int test_values[] = {5, 10, 15, 0, -1};
-    int num_tests = 5;
-    
-    print_string("Testing sum_to_n assembly function:\n");
-    
-    for (int i = 0; i < num_tests; i++) {
-        int n = test_values[i];
-        int result = sum_to_n(n);
-        
-        print_string("sum_to_n(");
-        print_number(n);
-        print_string(") = ");
-        print_number(result);
-        print_string("\n");
-    }
-    
-    print_string("Tests completed.\n");
-    
-    // Infinite loop to keep program running
-    while (1) {
-        __asm__ volatile ("nop");
-    }
+    const char input[] = "HOLA1234";
+    size_t inputLen = sizeof(input) - 1;   // 8 bytes
+    char padded[inputLen + BLOCK_SIZE];
+    size_t paddedLen = PKCS7(input, inputLen, padded);
+
+    print_string("Original message:\n");
+    print_ascii(input, inputLen);
+
+    print_string("Padded data (hex):\n");
+    print_hex(padded, paddedLen);
+
+    print_string("Padded data (ASCII):\n");
+    print_ascii(padded, paddedLen);
+
+    while (1) { __asm__ volatile ("nop"); }
 }
