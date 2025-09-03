@@ -1,5 +1,4 @@
-#include <stddef.h> 
-#include <stdint.h>  
+#include "data.h"
 
 #define BLOCK_SIZE 8
 
@@ -118,13 +117,11 @@ void words_to_bytes(const uint32_t* v, char* bytes) {
 
 // Entry point for C program
 void main() {
-    uint32_t key[4] = {0x12345678, 0x9ABCDEF0, 0xFEDCBA98, 0x76543210};
-
-    const char input[] = "HOLA1234 como estas me llamo jimmy";
     size_t inputLen = sizeof(input) - 1;   
     char padded[inputLen + BLOCK_SIZE];
     size_t paddedLen = PKCS7(input, inputLen, padded);
 
+    print_char('\n');
     print_string("Original message:\n");
     print_ascii(input, inputLen);
 
