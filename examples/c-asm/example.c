@@ -6,6 +6,7 @@
 // Assembly function declaration
 extern int sum_to_n(int n);
 extern void tea_encrypt(uint32_t v[2], const uint32_t key[4]);
+extern void tea_decrypt(uint32_t v[2], const uint32_t key[4]);
 
 // Simple implementation of basic functions since we're in bare-metal environment
 void print_char(char c) {
@@ -112,6 +113,15 @@ void main() {
     print_hex((const char*)v, sizeof(v));
 
     print_string("Encrypted data (ASCII):\n");
+    print_ascii((const char*)v, sizeof(v));
+
+    print_string("Decrypting...\n");
+    tea_decrypt(v, key);
+
+    print_string("Decrypted data (hex):\n");
+    print_hex((const char*)v, sizeof(v));
+
+    print_string("Decrypted data (ASCII):\n");
     print_ascii((const char*)v, sizeof(v));
 
     while (1) { __asm__ volatile ("nop"); }
