@@ -47,27 +47,59 @@ void print_string(const char* str) {
     }
 }
 
-void print_hex(const char* buffer, size_t len) {
+void print_hex(const char* buffer, size_t len, char endian) {
     const char hex_chars[] = "0123456789ABCDEF";
-    for (size_t i = 0; i < len; i++) {
-        print_char(hex_chars[(buffer[i] >> 4) & 0xF]);
-        print_char(hex_chars[buffer[i] & 0xF]);
-        print_char(' ');
-    }
-    print_char('\n');
-}
 
-void print_ascii(const char* buffer, size_t len) {
-    for (size_t i = 0; i < len; i++) {
-        char c = buffer[i];
-        if (c >= 32 && c <= 126) { // caracteres imprimibles
-            print_char(c);
-        } else {
-            print_char('.'); // reemplazar no imprimibles por '.'
+    if (endian == 'B') {
+        // recorrer en big endian (por palabras de 4 bytes)
+        for (size_t i = 0; i < len; i += 4) {
+            for (int j = 3; j >= 0; j--) {
+                unsigned char b = (unsigned char)buffer[i + j];
+                print_char(hex_chars[(b >> 4) & 0xF]);
+                print_char(hex_chars[b & 0xF]);
+                print_char(' ');
+            }
+        }
+    } else {
+        // little endian: como está en memoria
+        for (size_t i = 0; i < len; i++) {
+            unsigned char b = (unsigned char)buffer[i];
+            print_char(hex_chars[(b >> 4) & 0xF]);
+            print_char(hex_chars[b & 0xF]);
+            print_char(' ');
         }
     }
     print_char('\n');
 }
+
+
+void print_ascii(const char* buffer, size_t len, char endian) {
+    if (endian == 'B') {
+        // recorrer en big endian (por palabras de 4 bytes)
+        for (size_t i = 0; i < len; i += 4) {
+            for (int j = 3; j >= 0; j--) {
+                char c = buffer[i + j];
+                if (c >= 32 && c <= 126) { // caracteres imprimibles
+                    print_char(c);
+                } else {
+                    print_char('.'); // reemplazar no imprimibles por '.'
+                }
+            }
+        }
+    } else {
+        // little endian: como está en memoria
+        for (size_t i = 0; i < len; i++) {
+            char c = buffer[i];
+            if (c >= 32 && c <= 126) {
+                print_char(c);
+            } else {
+                print_char('.');
+            }
+        }
+    }
+    print_char('\n');
+}
+
 
 // Padding PKC#7
 size_t PKCS7(const char* input, size_t inputLen, char* output) {
@@ -90,39 +122,41 @@ size_t PKCS7(const char* input, size_t inputLen, char* output) {
 
 // Entry point for C program
 void main() {
+    uint32_t key[4] = {0x12345678, 0x9ABCDEF0, 0xFEDCBA98, 0x76543210};
+
     const char input[] = "HOLA1234";
     size_t inputLen = sizeof(input) - 1;   // 8 bytes
     char padded[inputLen + BLOCK_SIZE];
     size_t paddedLen = PKCS7(input, inputLen, padded);
 
     print_string("Original message:\n");
-    print_ascii(input, inputLen);
+    print_ascii(input, inputLen, 'L');
 
     print_string("Padded data (hex):\n");
-    print_hex(padded, paddedLen);
+    print_hex(padded, paddedLen, 'L');
 
     print_string("Padded data (ASCII):\n");
-    print_ascii(padded, paddedLen);
+    print_ascii(padded, paddedLen, 'L');
 
     print_string("Encrypting...\n");
     uint32_t v[2] = {0x484F4C41, 0x31323334};  // "HOLA1234"
-    uint32_t key[4] = {0x12345678, 0x9ABCDEF0, 0xFEDCBA98, 0x76543210};
+
     tea_encrypt(v, key);
 
     print_string("Encrypted data (hex):\n");
-    print_hex((const char*)v, sizeof(v));
+    print_hex((const char*)v, sizeof(v), 'B');
 
     print_string("Encrypted data (ASCII):\n");
-    print_ascii((const char*)v, sizeof(v));
+    print_ascii((const char*)v, sizeof(v), 'B');
 
     print_string("Decrypting...\n");
     tea_decrypt(v, key);
 
     print_string("Decrypted data (hex):\n");
-    print_hex((const char*)v, sizeof(v));
+    print_hex((const char*)v, sizeof(v), 'B');
 
     print_string("Decrypted data (ASCII):\n");
-    print_ascii((const char*)v, sizeof(v));
+    print_ascii((const char*)v, sizeof(v), 'B');
 
     while (1) { __asm__ volatile ("nop"); }
 }
