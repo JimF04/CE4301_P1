@@ -47,54 +47,25 @@ void print_string(const char* str) {
     }
 }
 
-void print_hex(const char* buffer, size_t len, char endian) {
+void print_hex(const char* buffer, size_t len) {
     const char hex_chars[] = "0123456789ABCDEF";
-
-    if (endian == 'B') {
-        // recorrer en big endian (por palabras de 4 bytes)
-        for (size_t i = 0; i < len; i += 4) {
-            for (int j = 3; j >= 0; j--) {
-                unsigned char b = (unsigned char)buffer[i + j];
-                print_char(hex_chars[(b >> 4) & 0xF]);
-                print_char(hex_chars[b & 0xF]);
-                print_char(' ');
-            }
-        }
-    } else {
-        // little endian: como está en memoria
-        for (size_t i = 0; i < len; i++) {
-            unsigned char b = (unsigned char)buffer[i];
-            print_char(hex_chars[(b >> 4) & 0xF]);
-            print_char(hex_chars[b & 0xF]);
-            print_char(' ');
-        }
+    for (size_t i = 0; i < len; i++) {
+        unsigned char b = (unsigned char)buffer[i];
+        print_char(hex_chars[(b >> 4) & 0xF]);
+        print_char(hex_chars[b & 0xF]);
+        print_char(' ');
     }
     print_char('\n');
 }
 
 
-void print_ascii(const char* buffer, size_t len, char endian) {
-    if (endian == 'B') {
-        // recorrer en big endian (por palabras de 4 bytes)
-        for (size_t i = 0; i < len; i += 4) {
-            for (int j = 3; j >= 0; j--) {
-                char c = buffer[i + j];
-                if (c >= 32 && c <= 126) { // caracteres imprimibles
-                    print_char(c);
-                } else {
-                    print_char('.'); // reemplazar no imprimibles por '.'
-                }
-            }
-        }
-    } else {
-        // little endian: como está en memoria
-        for (size_t i = 0; i < len; i++) {
-            char c = buffer[i];
-            if (c >= 32 && c <= 126) {
-                print_char(c);
-            } else {
-                print_char('.');
-            }
+void print_ascii(const char* buffer, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        char c = buffer[i];
+        if (c >= 32 && c <= 126) {
+            print_char(c);
+        } else {
+            print_char('.');
         }
     }
     print_char('\n');
@@ -120,43 +91,93 @@ size_t PKCS7(const char* input, size_t inputLen, char* output) {
     return inputLen + paddingSize;
 } 
 
+// Convertir 8 bytes a dos palabras de 32 bits (big-endian)
+void bytes_to_words(const char* bytes, uint32_t* v) {
+    v[0] = ((uint32_t)(unsigned char)bytes[0] << 24) |
+           ((uint32_t)(unsigned char)bytes[1] << 16) |
+           ((uint32_t)(unsigned char)bytes[2] << 8)  |
+           ((uint32_t)(unsigned char)bytes[3]);
+    v[1] = ((uint32_t)(unsigned char)bytes[4] << 24) |
+           ((uint32_t)(unsigned char)bytes[5] << 16) |
+           ((uint32_t)(unsigned char)bytes[6] << 8)  |
+           ((uint32_t)(unsigned char)bytes[7]);
+}
+
+// Volver a escribir dos palabras de 32 bits en 8 bytes (big-endian)
+void words_to_bytes(const uint32_t* v, char* bytes) {
+    bytes[0] = (v[0] >> 24) & 0xFF;
+    bytes[1] = (v[0] >> 16) & 0xFF;
+    bytes[2] = (v[0] >> 8) & 0xFF;
+    bytes[3] = v[0] & 0xFF;
+
+    bytes[4] = (v[1] >> 24) & 0xFF;
+    bytes[5] = (v[1] >> 16) & 0xFF;
+    bytes[6] = (v[1] >> 8) & 0xFF;
+    bytes[7] = v[1] & 0xFF;
+}
+
 // Entry point for C program
 void main() {
     uint32_t key[4] = {0x12345678, 0x9ABCDEF0, 0xFEDCBA98, 0x76543210};
 
-    const char input[] = "HOLA1234";
-    size_t inputLen = sizeof(input) - 1;   // 8 bytes
+    const char input[] = "HOLA1234 como estas me llamo jimmy";
+    size_t inputLen = sizeof(input) - 1;   
     char padded[inputLen + BLOCK_SIZE];
     size_t paddedLen = PKCS7(input, inputLen, padded);
 
     print_string("Original message:\n");
-    print_ascii(input, inputLen, 'L');
+    print_ascii(input, inputLen);
 
-    print_string("Padded data (hex):\n");
-    print_hex(padded, paddedLen, 'L');
-
-    print_string("Padded data (ASCII):\n");
-    print_ascii(padded, paddedLen, 'L');
-
+    print_char('\n');
     print_string("Encrypting...\n");
-    uint32_t v[2] = {0x484F4C41, 0x31323334};  // "HOLA1234"
 
-    tea_encrypt(v, key);
+    uint32_t v[2];
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        bytes_to_words(&padded[i], v);
+        tea_encrypt(v, key);
+        words_to_bytes(v, &padded[i]);
+    }
 
-    print_string("Encrypted data (hex):\n");
-    print_hex((const char*)v, sizeof(v), 'B');
+    // Print a cada bloque HEX
+    print_string("Encrypted block (hex):\n");
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        print_hex(&padded[i], BLOCK_SIZE);
+    }
 
-    print_string("Encrypted data (ASCII):\n");
-    print_ascii((const char*)v, sizeof(v), 'B');
+    // Print a cada bloque ASCII
+    print_string("Encrypted block (ASCII):\n");
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        print_ascii(&padded[i], BLOCK_SIZE);
+    }
 
+    print_string("Encrypted message:\n");
+    print_ascii(padded, paddedLen);
+
+    print_char('\n');
     print_string("Decrypting...\n");
-    tea_decrypt(v, key);
 
-    print_string("Decrypted data (hex):\n");
-    print_hex((const char*)v, sizeof(v), 'B');
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        bytes_to_words(&padded[i], v);
+        tea_decrypt(v, key);
+        words_to_bytes(v, &padded[i]);
+    }
 
-    print_string("Decrypted data (ASCII):\n");
-    print_ascii((const char*)v, sizeof(v), 'B');
+    // Print a cada bloque HEX
+    print_string("Decrypted block (hex):\n");
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        print_hex(&padded[i], BLOCK_SIZE);
+
+    }
+
+    // Print a cada bloque ASCII
+    print_string("Decrypted block (ASCII):\n");
+    for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
+        print_ascii(&padded[i], BLOCK_SIZE);
+    }
+
+    print_char('\n');
+    print_string("Decrypted message:\n");
+    print_ascii(padded, paddedLen);
 
     while (1) { __asm__ volatile ("nop"); }
 }
