@@ -2,12 +2,34 @@
 
 #define BLOCK_SIZE 8
 
-// Assembly function declaration
-extern int sum_to_n(int n);
+/*
+Funciones externas de ensamblador
+
+tea_encrypt: Cifra un bloque de 64 bits usando la clave proporcionada.
+Params:
+    - v (uint32_t[2]): El bloque de datos a cifrar (dos palabras de 32 bits).
+    - key (const uint32_t[4]): La clave de cifrado (cuatro palabras de 32 bits).
+Returns:
+    - None 
+
+tea_decrypt: Descifra un bloque de 64 bits usando la clave proporcionada.
+Params:
+    - v (uint32_t[2]): El bloque de datos a descifrar (dos palabras de 32 bits).
+    - key (const uint32_t[4]): La clave de descifrado (cuatro palabras de 32 bits).
+*/
 extern void tea_encrypt(uint32_t v[2], const uint32_t key[4]);
 extern void tea_decrypt(uint32_t v[2], const uint32_t key[4]);
 
-// Simple implementation of basic functions since we're in bare-metal environment
+/*
+Function: print_char
+Imprime un carácter en la salida estándar (simulado aquí con una dirección de memoria específica).
+
+Params:
+    - c (char): El carácter a imprimir.
+
+Returns:
+    - None
+*/
 void print_char(char c) {
     // In a real bare-metal environment, this would write to UART
     // For now, this is just a placeholder
@@ -15,6 +37,16 @@ void print_char(char c) {
     *uart = c;
 }
 
+/*
+Function: print_number
+Imprime un número entero en la salida estándar.
+
+Params:
+    - num (int): El número a imprimir.
+
+Returns:
+    - None
+*/
 void print_number(int num) {
     if (num == 0) {
         print_char('0');
@@ -40,12 +72,33 @@ void print_number(int num) {
     }
 }
 
+/*
+Function: print_string
+Imprime una cadena de caracteres en la salida estándar.
+
+Params:
+    - str (const char*): La cadena a imprimir.
+
+Returns:
+    - None
+*/
 void print_string(const char* str) {
     while (*str) {
         print_char(*str++);
     }
 }
 
+/*
+Function: print_hex
+Imprime un buffer de bytes en formato hexadecimal.
+
+Params:
+    - buffer (const char*): El buffer de bytes a imprimir.
+    - len (size_t): La longitud del buffer.
+
+Returns:
+    - None
+*/
 void print_hex(const char* buffer, size_t len) {
     const char hex_chars[] = "0123456789ABCDEF";
     for (size_t i = 0; i < len; i++) {
@@ -57,7 +110,17 @@ void print_hex(const char* buffer, size_t len) {
     print_char('\n');
 }
 
+/*
+Function: print_ascii
+Imprime un buffer de bytes en formato ASCII.
 
+Params:
+    - buffer (const char*): El buffer de bytes a imprimir.
+    - len (size_t): La longitud del buffer.
+
+Returns:
+    - None
+*/
 void print_ascii(const char* buffer, size_t len) {
     for (size_t i = 0; i < len; i++) {
         char c = buffer[i];
@@ -71,7 +134,18 @@ void print_ascii(const char* buffer, size_t len) {
 }
 
 
-// Padding PKC#7
+/*
+Function: PKCS7
+Aplica el esquema de padding PKCS#7 a un bloque de datos.
+
+Params:
+    - input (const char*): El bloque de datos original.
+    - inputLen (size_t): La longitud del bloque de datos original.
+    - output (char*): El buffer donde se almacenará el bloque con padding.
+
+Returns:
+    - size_t: La longitud del bloque con padding.
+*/
 size_t PKCS7(const char* input, size_t inputLen, char* output) {
     // Calcular tamaño de padding
     size_t rest = inputLen % BLOCK_SIZE; // Resto de la división
@@ -90,7 +164,17 @@ size_t PKCS7(const char* input, size_t inputLen, char* output) {
     return inputLen + paddingSize;
 } 
 
-// Remover padding PKC#7
+/*
+Function: remove_PKCS7
+Remueve el padding PKCS#7 de un bloque de datos.
+
+Params:
+    - data (char*): El bloque de datos con padding.
+    - inputLen (size_t): La longitud del bloque de datos con padding.
+
+Returns:
+    - size_t: La longitud del bloque sin padding.
+*/
 size_t remove_PKCS7(char* data, size_t inputLen) {
     if (inputLen == 0) return 0;
 
@@ -111,7 +195,17 @@ size_t remove_PKCS7(char* data, size_t inputLen) {
     return inputLen - paddingSize;
 }
 
-// Convertir 8 bytes a dos palabras de 32 bits (big-endian)
+/*
+Function: bytes_to_words
+Convierte 8 bytes en dos palabras de 32 bits (big-endian).
+
+Params:
+    - bytes (const char*): Los bytes a convertir.
+    - v (uint32_t*): El buffer donde se almacenarán las palabras de 32 bits.
+
+Returns:
+    - None
+*/
 void bytes_to_words(const char* bytes, uint32_t* v) {
     v[0] = ((uint32_t)(unsigned char)bytes[0] << 24) |
            ((uint32_t)(unsigned char)bytes[1] << 16) |
@@ -123,7 +217,17 @@ void bytes_to_words(const char* bytes, uint32_t* v) {
            ((uint32_t)(unsigned char)bytes[7]);
 }
 
-// Volver a escribir dos palabras de 32 bits en 8 bytes (big-endian)
+/*
+Function: words_to_bytes
+Convierte dos palabras de 32 bits (big-endian) en 8 bytes.
+
+Params:
+    - v (const uint32_t*): Las palabras de 32 bits a convertir.
+    - bytes (char*): El buffer donde se almacenarán los bytes.
+
+Returns:
+    - None
+*/
 void words_to_bytes(const uint32_t* v, char* bytes) {
     bytes[0] = (v[0] >> 24) & 0xFF;
     bytes[1] = (v[0] >> 16) & 0xFF;
@@ -136,7 +240,10 @@ void words_to_bytes(const uint32_t* v, char* bytes) {
     bytes[7] = v[1] & 0xFF;
 }
 
-// Entry point for C program
+/*
+Function: main
+Programa principal que demuestra el cifrado y descifrado usando TEA con padding PKCS#7.
+*/
 void main() {
     size_t inputLen = sizeof(input) - 1;   
     char padded[inputLen + BLOCK_SIZE];
