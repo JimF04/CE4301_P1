@@ -90,6 +90,27 @@ size_t PKCS7(const char* input, size_t inputLen, char* output) {
     return inputLen + paddingSize;
 } 
 
+// Remover padding PKC#7
+size_t remove_PKCS7(char* data, size_t inputLen) {
+    if (inputLen == 0) return 0;
+
+    unsigned char paddingSize = (unsigned char)data[inputLen - 1];
+    if (paddingSize > BLOCK_SIZE || paddingSize == 0) {
+        // Invalid padding
+        return inputLen;
+    }
+
+    // Verificar que todos los bytes de padding sean iguales a paddingSize
+    for (size_t i = 0; i < paddingSize; i++) {
+        if ((unsigned char)data[inputLen - 1 - i] != paddingSize) {
+            // Invalid padding
+            return inputLen;
+        }
+    }
+
+    return inputLen - paddingSize;
+}
+
 // Convertir 8 bytes a dos palabras de 32 bits (big-endian)
 void bytes_to_words(const char* bytes, uint32_t* v) {
     v[0] = ((uint32_t)(unsigned char)bytes[0] << 24) |
@@ -171,6 +192,8 @@ void main() {
     for (size_t i = 0; i < paddedLen; i += BLOCK_SIZE) {
         print_ascii(&padded[i], BLOCK_SIZE);
     }
+
+    paddedLen = remove_PKCS7(padded, paddedLen);
 
     print_char('\n');
     print_string("Decrypted message:\n");
