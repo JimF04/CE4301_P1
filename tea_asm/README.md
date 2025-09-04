@@ -2,15 +2,15 @@
 
 Programa simple del algoritmo **TEA (Tiny Encryption Algorithm)** escrito completamente en ensamblador **RISC-V**. Incluye dos versiones:
 
-* `test.s` → **Encrypt**
-* `test2.s` → **Decrypt**
+* `encrypt.s` 
+* `decrypt.s` 
 
 ---
 
 ## Archivos
 
-* `test.s`: Código fuente en ensamblador para **encriptar**.
-* `test2.s`: Código fuente en ensamblador para **desencriptar**.
+* `encrypt.s`: Código fuente en ensamblador para **encriptar**.
+* `decrypt.s`: Código fuente en ensamblador para **desencriptar**.
 * `linker.ld`: Script de enlazado.
 * `build.sh`: Script de compilación.
 * `run-qemu.sh`: Script para ejecutar QEMU.
@@ -35,8 +35,8 @@ Programa simple del algoritmo **TEA (Tiny Encryption Algorithm)** escrito comple
 > ⚠️ **Importante:**
 > Debes escoger cuál ensamblador compilar y ejecutar:
 >
-> * `test.s` → encriptación
-> * `test2.s` → desencriptación
+> * `encrypt.s` → encriptación
+> * `decrypt.s` → desencriptación
 
 ---
 
@@ -68,15 +68,15 @@ delta:
 
 ```bash
 # Compilar
-./build.sh  # ajusta si quieres compilar test.s o test2.s
+./build.sh  # ajusta si quieres compilar encrypt.s o decrypt.s
 
 # Ejecutar con QEMU (en una terminal)
 ./run-qemu.sh
 
 # En otra terminal, conectar GDB
 docker exec -it rvqemu /bin/bash
-cd /home/rvqemu-dev/workspace/examples/asm-only
-gdb-multiarch test.elf   # o test2.elf según el archivo
+cd /home/rvqemu-dev/workspace/tea_asm
+gdb-multiarch encrypt.elf   # o decrypt.elf según el archivo
 ```
 
 ---
@@ -109,7 +109,7 @@ quit # para salir
 
 ## Ejemplo de elección
 
-* Para **encriptar** el mensaje `"HOLA1234"`: usa `test.s`.
-* Para **desencriptar** el mensaje cifrado: usa `test2.s`.
+* Para **encriptar** el mensaje `"HOLA1234"`: usa `encrypt.s`.
+* Para **desencriptar** el mensaje cifrado: usa `decrypt.s`.
 
 ---
