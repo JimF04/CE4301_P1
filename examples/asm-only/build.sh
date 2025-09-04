@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # Build script for assembly-only example
-echo "Building assembly-only example..."
+echo "Building tea encrypt/decrypt..."
 
 riscv64-unknown-elf-gcc \
     -march=rv32im \

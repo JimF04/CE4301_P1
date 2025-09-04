@@ -47,7 +47,7 @@ tea_encrypt_loop:
     xor t0, t0, t1
     add s1, s1, t0
 
-    # aumentar contador
+    # disminuir contador
     addi s8, s8, -1
     bnez s8, tea_encrypt_loop
 

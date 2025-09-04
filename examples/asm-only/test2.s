@@ -49,7 +49,7 @@ tea_decrypt_loop:
 
     sub s7, s7, s2 # sum -= delta
 
-    # aumentar contador
+    # disminuir contador
     addi s8, s8, -1
     bnez s8, tea_decrypt_loop
 
