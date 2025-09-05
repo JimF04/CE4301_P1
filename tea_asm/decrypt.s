@@ -1,3 +1,4 @@
+# Decrypt TEA (Tiny Encryption Algorithm) in RISC-V assembly
 .section .text
 .globl _start
 _start:
@@ -25,7 +26,7 @@ _start:
     li s7, 0
     mul s7, s2, s8
 
-tea_decrypt_loop:
+tea_loop:
 
     # v1 -= ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3])
     sll t0, s0, 4
@@ -51,7 +52,7 @@ tea_decrypt_loop:
 
     # disminuir contador
     addi s8, s8, -1
-    bnez s8, tea_decrypt_loop
+    bnez s8, tea_loop
 
     # almacenar resultados
     la t0, v0

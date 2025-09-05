@@ -19,14 +19,14 @@ Programa simple del algoritmo **TEA (Tiny Encryption Algorithm)** escrito comple
 
 ## Funcionalidad
 
-### TEA Encrypt (`test.s`)
+### TEA Encrypt (`encrypt.s`)
 
 * Encripta 2 bloques de 32 bits (`v0` y `v1`).
 * Inicializa registros con valores.
 * Realiza 32 rondas de suma y mezcla usando la **clave de 128 bits**.
 * Termina en un bucle infinito para mantener resultados en memoria.
 
-### TEA Decrypt (`test2.s`)
+### TEA Decrypt (`decrypt.s`)
 
 * Desencripta 2 bloques de 32 bits previamente cifrados.
 * Inicializa registros con valores encriptados.
@@ -107,9 +107,9 @@ quit # para salir
 
 ---
 
-## Ejemplo de elección
+### Detalles de Desarrollo
 
-* Para **encriptar** el mensaje `"HOLA1234"`: usa `encrypt.s`.
-* Para **desencriptar** el mensaje cifrado: usa `decrypt.s`.
+- [`tea_asm_c/README.md`](../tea_asm_c/README.md) - C + Ensamblador
+- [`README.md`](../README.md) - Documentación General
 
 ---

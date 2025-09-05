@@ -9,6 +9,6 @@ qemu-system-riscv32 \
     -machine virt \
     -nographic \
     -bios none \
-    -kernel encrypt.elf \
+    -kernel decrypt.elf \
     -S \
     -gdb tcp::1234

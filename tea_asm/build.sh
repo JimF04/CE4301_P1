@@ -8,12 +8,12 @@ riscv64-unknown-elf-gcc \
     -nostdlib \
     -ffreestanding \
     -g \
-    encrypt.s \
+    decrypt.s \
     -T linker.ld \
-    -o encrypt.elf
+    -o decrypt.elf
 
 if [ $? -eq 0 ]; then
-    echo "Build successful: encrypt.elf created"
+    echo "Build successful: decrypt.elf created"
 else
     echo "Build failed"
     exit 1
