@@ -1,6 +1,5 @@
 # Documentación Técnica – Proyecto TEA en RISC-V + QEMU
 
----
 
 ## 1. Introducción
 
@@ -277,7 +276,7 @@ En este primer caso se utiliza el texto de prueba y clave definido en el archivo
 
 ```C
 // Input message
-static const char input[] = "hola1234"; 
+static const char input[] = "HOLA1234"; 
 
 // TEA key (128 bits)
 static const uint32_t key[4] = {
@@ -393,6 +392,15 @@ continue
 continue
 monitor quit
 quit
+```
+
+### Errores comunes
+```bash
+# Error: Archivo build.sh contiene finales de línea de Windows (CRLF, ^M) en lugar de los de Linux (LF).
+bash: ./build.sh: /bin/bash^M: bad interpreter: No such file or directory
+
+# Solución: Reescribir con sed
+sed -i 's/\r$//' build.sh
 ```
 
 ---
