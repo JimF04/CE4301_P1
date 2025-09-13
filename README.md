@@ -394,13 +394,21 @@ monitor quit
 quit
 ```
 
-### Errores comunes
+### Errores comunes al usar wsl
 ```bash
-# Error: Archivo build.sh contiene finales de línea de Windows (CRLF, ^M) en lugar de los de Linux (LF).
+# Error 1: Archivo build.sh contiene finales de línea de Windows (CRLF, ^M) en lugar de los de Linux (LF).
 bash: ./build.sh: /bin/bash^M: bad interpreter: No such file or directory
-
-# Solución: Reescribir con sed
+# Solución 1: Reescribir con sed
 sed -i 's/\r$//' build.sh
+
+
+# Error 2: Clonar el proyecto en windows
+-bash: ./run.sh: cannot execute: required file nor found
+# Solucion 2: Clonar el repositorio dentro de wsl
+wsl
+git clone https://github.com/JimF04/CE4301_P1.git
+cd CE4301_P1
+./run.sh
 ```
 
 ---
